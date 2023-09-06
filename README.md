@@ -1,70 +1,89 @@
-# Getting Started with Create React App
+This demo with instructions for the issue you encountered with React Quill when pasting data from Google and other sites, where it copies all the style elements along with it, and how you solved it:
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+```markdown
+# React Quill Paste Issue Fix
 
-## Available Scripts
+If you've encountered an issue with React Quill when pasting data from Google and other sites, where it copies all the style elements along with it, you can follow these steps to solve the issue and manage the HTML before posting the data.
 
-In the project directory, you can run:
+## Step 1: Add CSS Rules
 
-### `yarn start`
+In your CSS file (e.g., `App.css`), add the following CSS rules to override the styles applied by React Quill when pasting data:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```css
+.ql-snow * {
+  color: black !important;
+  text-decoration: none!important;
+  font-style: normal!important;
+  background: transparent!important;
+  font-weight: 300;
+}
+.ql-snow img {
+  display: none;
+}
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+These rules will help remove unwanted styles and hide images when pasting data.
 
-### `yarn test`
+## Step 2: Update `App.js`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+In your React component file (e.g., `App.js`), update your code to include a function that sanitizes the pasted HTML content. Here's the updated code:
 
-### `yarn build`
+```javascript
+import React, { useState } from "react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import "./App.css";
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+const Editor = () => {
+  const formattedHTML = (html) => {
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = html;
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+    // Remove all style attributes
+    const elementsWithStyle = tempDiv.querySelectorAll('*[style]');
+    elementsWithStyle.forEach((element) => {
+      element.removeAttribute('style');
+    });
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+    return tempDiv.innerHTML.replace(/<[^>]*>/g, '<p>');
+  };
 
-### `yarn eject`
+  const [state, setState] = useState({ value: "" });
+  const [postValue, setPostValue] = useState("");
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+  const handleChange = (value) => {
+    setState({ value });
+  };
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+  const handlePost = () => {
+    setPostValue(state.value);
+  };
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+  return (
+    <div className="text-editor">
+      <ReactQuill
+        theme="snow"
+        value={state.value}
+        onChange={handleChange}
+        placeholder={"Write something awesome..."}
+        modules={{ toolbar: false }}
+      />
+      <button onClick={handlePost}>Post</button>
+      <div className="post-box">
+        <h3>Posted Content:</h3>
+        <ReactQuill
+          theme="snow"
+          value={formattedHTML(postValue)}
+          readOnly
+          modules={{ toolbar: false }}
+        />
+      </div>
+    </div>
+  );
+};
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+export default Editor;
+```
 
-## Learn More
+With these code changes, you'll be able to paste content from Google and other sites into React Quill without copying unwanted styles, and the posted content will be displayed correctly.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)

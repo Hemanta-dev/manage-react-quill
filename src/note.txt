@@ -1,0 +1,65 @@
+import React, { useState } from "react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import "./App.css";
+
+const Editor = () => {
+
+  // Function to strip HTML tags from a string
+// const stripHtmlTags = (html) => {
+//   const tempDiv = document.createElement("div");
+//   tempDiv.innerHTML = html;
+//   return tempDiv.textContent || tempDiv.innerText || "";
+// };
+// const stripHtmlTags = (html) => {
+//   const tempDiv = document.createElement("div");
+//   tempDiv.innerHTML = html;
+//   let plainText = tempDiv.textContent || tempDiv.innerText || "";
+
+//   // Remove extra whitespace and replace line breaks with spaces
+//   plainText = plainText.replace(/\s+/g, " ");
+
+//   return plainText.trim();
+
+// };
+
+const formattedHTML = (html) => {
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = html ;
+  // Remove all style attributes 
+  const elementsWithStyle = tempDiv.querySelectorAll('*[style]');
+  elementsWithStyle.forEach((element) => {
+    element.removeAttribute('style');
+  });
+  return tempDiv.innerHTML.replace(/<[^>]*>/g, '<p>');
+};
+  const [state, setState] = useState({ value: "" });
+  const [postValue, setPostValue] = useState(""); // State to hold the post content
+
+  const handleChange = (value) => {
+    setState({ value });
+  };
+
+  const handlePost = () => {
+    setPostValue(state.value); // Set the post content when the "Post" button is clicked
+  };
+
+  return (
+    <div className="text-editor">
+      <ReactQuill
+        theme="snow"
+        value={state.value}
+        onChange={handleChange}
+        placeholder={"Write something awesome..."}
+        modules={{ toolbar: false }}
+      />
+      <button onClick={handlePost}>Post</button>
+      <div className="post-box">
+        <h3>Posted Content:</h3>
+        <div>{formattedHTML(postValue)}</div>
+      </div>
+    </div>
+  );
+};
+
+export default Editor;
